@@ -2,7 +2,9 @@
 title: "replication report"
 author: "Hannah Hardenbergh"
 date: "4/2/2019"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -78,14 +80,6 @@ for(i in 1:nrow(wtreat)){
   use.Nbtreat = as.matrix(Nbtreat[i,])
   
   
-  ##name graphs
-  
-  if(i == 7){
-    pdf('output/Figure_1.pdf')
-  }
-  else{
-    pdf(paste('appendix_output/Figure_A1',use.letters[i],'.pdf',sep=''))
-  }			
   par(las = 1)
   par(mar = c(5.1, 4.1, .5, .5))
   plot(xs, use.wtreat,
@@ -166,7 +160,6 @@ for(i in 1:nrow(wtreat)){
        cex.axis = cex.axis
   )	
   
-  dev.off()
 }
 ```
 
@@ -268,15 +261,7 @@ for(figure in c('white.basic.main','white.demo.main','white.demo.property','whit
 			cupper = use.treat+(1.96*treat.2$stdev)
 			use.N.treat = treat.2$N.treatment + treat.2$N.control
 		}
-	  
-		if(figure %in% c('white.demo.main','blackmain') & i ==1){
-				pdf(paste('output/Figure_',fig.nums[i],'.pdf',sep=''))
-		}
-	  
-		else{	
-			pdf(paste('appendix_output/Figure_',fig.nums[i],'.pdf',sep=''))
-		}
-	  
+
 			par(las = 1)
 			par(mar = c(5.1, 4.1, .5, .5))
 			plot(xs, use.treat,
@@ -317,7 +302,6 @@ for(figure in c('white.basic.main','white.demo.main','white.demo.property','whit
 					cex.axis = cex.axis
 					)	
 			
-			dev.off()
 		}
 	}	
 ```
@@ -367,7 +351,6 @@ for(i in 1:2){
   
 	colnames(datas[[i]]) = c("mean","sd","50%","2.5%","97.5%") 
 
-	pdf(paste('output/Figure_4',use.letters[i],'.pdf',sep=''))
 		par(las = 1)
 		par(mar = c(5.1, 4.1, .5, .5))
 		plot(xs[[i]],datas[[i]][,'mean'],
@@ -401,7 +384,6 @@ for(i in 1:2){
 		labels = axis.labs[[i]],
 		cex.axis = cex.axis)
 		
-		dev.off()
 }
 ```
 
@@ -442,8 +424,6 @@ for(i in graphs){
 	
 	dat[dat$election == 'keyes_pct_ei','diff'] =dat[dat$election == 'keyes_pct_ei','y.mean'] - dat[dat$election == 'keyes_pct_ei','x.mean']
 	
-		pdf(paste('output/Figure_',i,'.pdf',sep=''),
-		width = 7, height = 8)
 		par(las = 1)
 		par(mar = c(5.1, 4.1, .5, 1.5))
 		plot(seq(1:4),
@@ -525,7 +505,6 @@ for(i in graphs){
 			label = c('-0.10','-0.05','0.00','0.05','0.10','0.15','0.20','0.25','0.30'),
 			cex.axis = cex.axis
 			)			
-		dev.off()
 }		
 ```
 
@@ -539,7 +518,6 @@ groups = read.csv('houses.data/par.trends.csv')
 
 #plot elections votes
 
-	pdf('appendix_output/Figure_A2.pdf')
 		par(las = 1)
 		par(mar = c(5.1, 4.1, .5, .5))
 		plot(1,
@@ -564,6 +542,5 @@ groups = read.csv('houses.data/par.trends.csv')
 		axis(side = 1, at = seq(1:5), labels = c('1996','1998','2000','2002','2004'))
 		axis(side = 2, at = seq(from = .5, to = .9, by = .05), labels = seq(from = .5, to = .9, by = .05))
 			
-		dev.off()
 ```
 
