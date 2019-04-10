@@ -97,18 +97,41 @@ for(j in 1:length(namepcts)){
 	   ##boostrapped standard errors
       	
 		if(white.treat.N[j,h] > 0){
-			white.boot = two.boot((Wtreat$vote2004-Wtreat$vote2000),(Wcont$vote2004-Wcont$vote2000),mean, R = 2, na.rm=T)
+		  
+			white.boot = two.boot((Wtreat$vote2004-Wtreat$vote2000),
+			                      (Wcont$vote2004-Wcont$vote2000),
+			                      mean, 
+			                      
+			                      # set R = 2, rather than 1000. Limits the
+			                      # bootstrapping, which takes away from accuracy but
+			                      # saves time...
+			                      
+			                      R = 2, 
+			                      na.rm=T)
+			
 			white.treat.effect.mean.boot[j,h] = white.boot$t0
+			
 			white.boot.ci = boot.ci(white.boot, type = 'basic')
+			
 			white.treat.effect.conf.boot.lower[j,h] = white.boot.ci$basic[4]
+			
 			white.treat.effect.conf.boot.upper[j,h] = white.boot.ci$basic[5]
 		      		}
 		      		
 		if(black.treat.N[j,h] > 0){
-			black.boot = two.boot((Btreat$vote2004-Btreat$vote2000),(Bcont$vote2004-Bcont$vote2000),mean, R = 2, na.rm=T)
+		  
+			black.boot = two.boot((Btreat$vote2004-Btreat$vote2000),
+			                      (Bcont$vote2004-Bcont$vote2000),
+			                      mean, 
+			                      R = 2, 
+			                      na.rm=T)
+			
 			black.treat.effect.mean.boot[j,h] = black.boot$t0
+			
 			black.boot.ci = boot.ci(black.boot, type = 'basic')
+			
 			black.treat.effect.conf.boot.lower[j,h] = black.boot.ci$basic[4]
+			
 			black.treat.effect.conf.boot.upper[j,h] = black.boot.ci$basic[5]		
 			 }
 			 }
@@ -116,6 +139,7 @@ for(j in 1:length(namepcts)){
 		
 	
 time.elapsed = proc.time() - ptm  ##end time
+
 cat(paste('total elapsed time:', time.elapsed[3],'\n \n',sep = ' '))
 
 ```
@@ -170,8 +194,9 @@ for(i in 1:length(dists)){
 	
 	##now estimate bootstrapped confidence intervals
 	
-	N.R = 1000
-	out.boot = lm.boot(out.reg,R = N.R)
+	N.R = 2
+	out.boot = lm.boot(out.reg,
+	                   R = N.R)
 	
 	##sometimes bad draws on the sparse factors cause trouble on estimating
 	##standard errors, so put in try functions. Reduce size of simulation for sparse
@@ -179,10 +204,12 @@ for(i in 1:length(dists)){
 	
 	repeat {
 	res.try = try(summary(out.boot), silent = T)
+	
 		if(class(res.try) == 'try-error'){
 			N.R = N.R - 1
-			out.boot = lm.boot(out.reg,R = N.R)		 
-		if(N.R < 50){N.R. = 1000}
+			out.boot = lm.boot(out.reg,
+			                   R = N.R)		 
+		if(N.R < 50){N.R. = 2}
 			} 	
 		if(class(res.try) != 'try-error') break()
 		}
