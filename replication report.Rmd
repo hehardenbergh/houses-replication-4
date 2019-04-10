@@ -184,10 +184,10 @@ use.letters = c('a','b','c','d','e','f','skip','g','h')
 ```
 
 ```{r }
-#Figures 2: Treatment Effects Using Matched White Voters Near Nondemolished Projects for Control Group,
-# and Figure 3: Treatment Effects Using Matched Black Control Group and Controlling for Homeownership
+#Figures 2: Treatment Effects Using Matched White Voters Near Nondemolished
+#Projects for Control Group
 
-##this cycles thorugh a bunch of dataframes, each of which is needed for a
+##Enos' for loops cycled through a bunch of dataframes, each of which is needed for a
 ##different graph. The following is only dataframes needed for Figures 2 and 3.
 ##Get rid of all his for loops! because we aren't making the Appendix cr*p, you
 ##can just read in the data in a normal line of code (we only need one of his
@@ -199,15 +199,10 @@ use.letters = c('a','b','c','d','e','f','skip','g','h')
 		
 pchs = 17 
 
-# read in data for figure 2
+# read in data for figure 2.
 
-treat.white.match <- read_csv('houses.data/white.match.nondemolished.csv')
-diffs.white.match <- read_csv('houses.data/white.match.nondemolished.diffs.csv')
-
-# and for figure 3
-
-treat.black.match <- read_csv('houses.data/white.match.black.property.csv')
-diffs.black.match <- read_csv('houses.data/white.match.black.diffs.property.csv')
+treat <- read_csv('houses.data/white.match.nondemolished.csv')
+diffs <- read_csv('houses.data/white.match.nondemolished.diffs.csv')
 
 
 ##define axis for different graphs
@@ -238,8 +233,12 @@ xlab = 'Treated Group Distance from Projects',
 xaxt = 'n',
 yaxt = 'n')
 
+# Include a line at y = 0
+
 abline(h = 0, lty = 2)
-				
+
+# this limits the segment lines for each confidence interval, I believe.
+
 segments(x0=xs,
          x1=xs,
          y0= use.treat + line.offset,
@@ -250,10 +249,10 @@ segments(x0=xs,
          y0= use.treat,
          y1=clower)
 
-### Treatment Effects
-			
+# print out triangle points
+
 points(xs, use.treat, 
-pch = pchs[i], 
+pch = pchs, 
 cex = point.size,
 bg = 'white',
 col = 'black')
@@ -262,6 +261,7 @@ paste('(',use.N.treat,')',sep = ''),
 cex = cex.N,
 pos = 3)
 
+# print axes names
 
 axis(side = 1,
 					at = xs,
@@ -275,6 +275,89 @@ axis(side = 2,
 					)
 ```
 
+
+```{r}
+# and Figure 3: Treatment Effects Using Matched Black Control Group and
+# Controlling for Homeownership. Much of this code is repeated from how to build
+# Figure 2.
+
+# load data for figure 3. these object names are the same exact ones for figure
+# 2 and 3. this worries me, but when I renamed them, I was going to have to
+# rename several other places where "treat" is used. for now, I will leave it,
+# because it doesn't seem to cause any problems. but still...
+
+treat <- read_csv('houses.data/white.match.black.property.csv')
+diffs <- read_csv('houses.data/white.match.black.diffs.property.csv')
+
+##define axis for different graphs
+  
+use.ylims = ylims
+use.ys.lab = ys.lab
+use.ys = ys
+
+
+# this code finds confidence intervals: go through each pair of
+# dataframes
+  
+use.treat = treat$coefficient			
+clower = use.treat-(1.96*treat$stdev)
+cupper = use.treat+(1.96*treat$stdev)
+use.N.treat = treat$N.treatment + treat$N.control
+		
+# make parameters for these graphics
+	 
+par(las = 1)
+par(mar = c(5.1, 4.1, .5, .5))
+plot(xs, use.treat,
+ylim = use.ylims,
+xlim = xlims,
+type = 'n',
+ylab = 'Treatment Effect',
+xlab = 'Treated Group Distance from Projects',
+xaxt = 'n',
+yaxt = 'n')
+
+# Include a line at y = 0
+
+abline(h = 0, lty = 2)
+
+# this limits the segment lines for each confidence interval, I believe.
+
+segments(x0=xs,
+         x1=xs,
+         y0= use.treat + line.offset,
+         y1=cupper)
+
+segments(x0=xs,
+         x1=xs,
+         y0= use.treat,
+         y1=clower)
+
+# print out triangle points
+
+points(xs, use.treat, 
+pch = pchs, 
+cex = point.size,
+bg = 'white',
+col = 'black')
+text(xs,use.treat,
+paste('(',use.N.treat,')',sep = ''),
+cex = cex.N,
+pos = 3)
+
+# print axes names
+
+axis(side = 1,
+					at = xs,
+					label = seq(100,1000,100),
+					cex.axis = cex.axis
+					)
+axis(side = 2,
+					at = use.ys,
+					label = use.ys.lab,
+					cex.axis = cex.axis
+					)
+```
 
 ```{r }
 #predicted effects graphs, Figure 4
