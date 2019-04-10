@@ -1,28 +1,52 @@
 ---
-title: "replication report"
+title: "Replication Report"
 author: "Hannah Hardenbergh"
-date: "4/2/2019"
+date: "4/10/2019"
 output:
-  pdf_document: default
-  html_document: default
+  pdf_document:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE)
+
+#This is replication code for 'What the Demolition of Public Housing Teaches Us About
+#the Impact of Racial Threat on Political Behavior', published June 2014 by Ryan
+#Enos.
+
+knitr::opts_chunk$set(echo = FALSE,
+                      message=FALSE,
+                      error=FALSE,
+                      warning = FALSE)
+
+# note: I took a look at Gabe's code to help me figure out how to display the
+# stargazer table (Table 1) in the knitted pdf. I noticed that he used the echo,
+# message, and error commands in almost every one of his code chunks. is there
+# an easier way to do that so you don't have to re-write it for each chunk you
+# want? to select chunk by numbers/names and tell the .rmd, this is the list of
+# commands I want for each chunk? I'm just going to have all my chunks with the
+# same list of commands, as seen above.
+
+# load libraries
+
+library(ei) 
+library(MatchIt)
+library(weights)
+library(simpleboot)
+library(Zelig)
+library(boot)
+library(apsrtable)
+library(tidyverse)
+library(stargazer)
 ```
 
+This is Replication code for 'What the Demolition of Public Housing Teaches Us About
+the Impact of Racial Threat on Political Behavior', published June 2014 by Ryan
+Enos. I replicate all figures, Table 1, and provide the data for figure 1 and table 1. I do not replicate the Appendix figures. 
+
 ```{r}
-#Replication code for 'What the Demolition of Public Housing Teaches Us About
-#the Impact of Racial Threat on Political Behavior', published June 2014 by Ryan
-#Enos
 
-rm(list = ls())
-
-library(apsrtable)
-
-cat('creating output \n')
-
-# master graphic parameters for graphics
+# Let's get started. This code is from Enos' file called,
+# "Create_tables_and_figures_only". Enos begins by making some parameters for
+# his graphics.
 
 ylims = c(-.35,.1)
 ylims.2 = c(-.45,.1)
@@ -46,38 +70,35 @@ line.offset = .0175
 
 ```{r }
 
-#Figure 1 and Appendix Figure A1
+#Figure 1: Treatment Effects
 
-#load data. make sure that the file path is correct.
+#load data. make sure that the file path is correct. also, swap read.csv for
+#read_csv every time you see it.
 
-wtreat = read.csv('houses.data/white.treat.effect.mean.boot.csv') 
-wtreat.lower = read.csv('houses.data/white.treat.effect.conf.boot.lower.csv') 
-wtreat.upper = read.csv('houses.data/white.treat.effect.conf.boot.upper.csv') 
-Nwtreat = read.csv('houses.data/white.treat.N.csv')
-btreat = read.csv('houses.data/black.treat.effect.mean.boot.csv') 
-btreat.lower = read.csv('houses.data/black.treat.effect.conf.boot.lower.csv') 
-btreat.upper = read.csv('houses.data/black.treat.effect.conf.boot.upper.csv') 
-Nbtreat = read.csv('houses.data/black.treat.N.csv')
+wtreat = read_csv('houses.data/white.treat.effect.mean.boot.csv') 
+wtreat.lower = read_csv('houses.data/white.treat.effect.conf.boot.lower.csv') 
+wtreat.upper = read_csv('houses.data/white.treat.effect.conf.boot.upper.csv') 
+Nwtreat = read_csv('houses.data/white.treat.N.csv')
+btreat = read_csv('houses.data/black.treat.effect.mean.boot.csv') 
+btreat.lower = read_csv('houses.data/black.treat.effect.conf.boot.lower.csv') 
+btreat.upper = read_csv('houses.data/black.treat.effect.conf.boot.upper.csv') 
+Nbtreat = read_csv('houses.data/black.treat.N.csv')
 
-#letters for marking graphs, one is not used
+#Enos uses letters for marking graphs for all except one
 
 use.letters = c('a','b','c','d','e','f','skip','g','h')
 
-##cycle through each line of data, each of which are groups defined by diferent namepcts
-
-for(i in 1:nrow(wtreat)){ 
+##turning into matrices helps below with segment function
   
-  ##turning into matrices helps below with segment function
+  use.wtreat = as.matrix(wtreat[7,])
+  use.wlower = as.matrix(wtreat.lower[7,])
+  use.wupper = as.matrix(wtreat.upper[7,])
+  use.Nwtreat = as.matrix(Nwtreat[7,])
   
-  use.wtreat = as.matrix(wtreat[i,])
-  use.wlower = as.matrix(wtreat.lower[i,])
-  use.wupper = as.matrix(wtreat.upper[i,])
-  use.Nwtreat = as.matrix(Nwtreat[i,])
-  
-  use.btreat = as.matrix(btreat[i,])
-  use.blower = as.matrix(btreat.lower[i,])
-  use.bupper = as.matrix(btreat.upper[i,])
-  use.Nbtreat = as.matrix(Nbtreat[i,])
+  use.btreat = as.matrix(btreat[7,])
+  use.blower = as.matrix(btreat.lower[7,])
+  use.bupper = as.matrix(btreat.upper[7,])
+  use.Nbtreat = as.matrix(Nbtreat[7,])
   
   
   par(las = 1)
@@ -160,150 +181,98 @@ for(i in 1:nrow(wtreat)){
        cex.axis = cex.axis
   )	
   
-}
 ```
 
 ```{r }
-#Figures 2 and 3 and Appendix Figure A3-A12
+#Figures 2: Treatment Effects Using Matched White Voters Near Nondemolished Projects for Control Group,
+# and Figure 3: Treatment Effects Using Matched Black Control Group and Controlling for Homeownership
 
-##this cycles thorugh a bunch of dataframes, each of which is needed for a different graph
+##this cycles thorugh a bunch of dataframes, each of which is needed for a
+##different graph. The following is only dataframes needed for Figures 2 and 3.
+##Get rid of all his for loops! because we aren't making the Appendix cr*p, you
+##can just read in the data in a normal line of code (we only need one of his
+##graphs.) (I'm not a fan of for loops....... why can't you just run code for
+##certain conditions without one??)
 
-for(figure in c('white.basic.main','white.demo.main','white.demo.property','white.demo.localrace','blackmain','blackcensus')){
-	if(figure == 'white.basic.main'){
-	  
-		##this group is different than the rest because the second set is not actually
-		##a diff in diff, but calling it "diffs" for consistency
-	  
-		treat = read.csv('houses.data/white.match.basic.csv')
-		treat.2 = read.csv('houses.data/white.match.basic.property.csv')
+## make data point types into triangles (for arbitrary reasons, as far as I can
+## tell. aesthetics? his graphs are a bit boring...)
 		
-		##figure names
-		
-		fig.nums = c('A3','A4') 
-		
-		##point types
-		
-		pchs = c(17,17) 
-	}
-  
-	if(figure == 'white.demo.main'){
-		treat = read.csv('houses.data/white.match.nondemolished.csv')
-		diffs = read.csv('houses.data/white.match.nondemolished.diffs.csv')
-		fig.nums = c('2','A5')
-		pchs = c(17,22)
-	}
-  
-	if(figure == 'white.demo.property'){
-		treat = read.csv('houses.data/white.match.nondemolished.property.csv')
-		diffs = read.csv('houses.data/white.match.nondemolished.diffs.property.csv')
-		fig.nums = c('A6','A7')	
-		pchs = c(17,22)
-	}	
-  
-	if(figure == 'white.demo.localrace'){
-		treat = read.csv('houses.data/white.match.nondemolished.localrace.csv')
-		diffs = read.csv('houses.data/white.match.nondemolished.diffs.localrace.csv')
-		fig.nums = c('A8','A9')			
-		pchs = c(17,22)
-	}
-  
-	if(figure == 'blackmain'){
-		treat = read.csv('houses.data/white.match.black.property.csv')
-		diffs = read.csv('houses.data/white.match.black.diffs.property.csv')
-		fig.nums = c('3','A12')
-		pchs = c(17,21)			
-	}
-  
-	if(figure == 'blackcensus'){
-		treat = read.csv('houses.data/white.match.black.csv')
-		diffs = read.csv('houses.data/white.match.black.diffs.csv')
-		fig.nums = c('A10','A11')
-		pchs = c(17,21)	
-	}
+pchs = 17 
 
-	##define axis for different graphs
-  
-	if(figure %in% c('white.basic.main','white.demo.main','blackmain')){
-			use.ylims = ylims
-			use.ys.lab = ys.lab
-			use.ys = ys
-	}
-  
-	else{
-			use.ylims = ylims.2
-			use.ys.lab = ys.lab.2
-			use.ys = ys.2
-	}
-  
+# read in data for figure 2
 
-	#go through pairs for each pair of dataframe
-  
-	for(i in 1:2){
-		if(i == 1){ 	
-			use.treat = treat$coefficient			
-			clower = use.treat-(1.96*treat$stdev)
-			cupper = use.treat+(1.96*treat$stdev)
-			use.N.treat = treat$N.treatment + treat$N.control
-		}			
-	  
-		if(i == 2 & figure != 'white.basic.main'){	
-			use.treat = diffs$mean.diff			
-			clower = diffs$low.ci
-			cupper = diffs$high.ci
-			use.N.treat = diffs$N
-		}	
-	  
-	  #white.basic.main figures have slightly different structure 
-	  
-		if(i == 2 & figure == 'white.basic.main'){	
-			use.treat = treat.2$coefficient			
-			clower = use.treat- (1.96*treat.2$stdev)
-			cupper = use.treat+(1.96*treat.2$stdev)
-			use.N.treat = treat.2$N.treatment + treat.2$N.control
-		}
+treat.white.match <- read_csv('houses.data/white.match.nondemolished.csv')
+diffs.white.match <- read_csv('houses.data/white.match.nondemolished.diffs.csv')
 
-			par(las = 1)
-			par(mar = c(5.1, 4.1, .5, .5))
-			plot(xs, use.treat,
-				ylim = use.ylims,
-				xlim = xlims,
-				type = 'n',
-				ylab = 'Treatment Effect',
-				xlab = 'Treated Group Distance from Projects',
-				xaxt = 'n',
-				yaxt = 'n')
-			abline(h = 0, lty = 2)
+# and for figure 3
+
+treat.black.match <- read_csv('houses.data/white.match.black.property.csv')
+diffs.black.match <- read_csv('houses.data/white.match.black.diffs.property.csv')
+
+
+##define axis for different graphs
+  
+use.ylims = ylims
+use.ys.lab = ys.lab
+use.ys = ys
+
+
+# this code finds confidence intervals: go through each pair of
+# dataframes
+  
+use.treat = treat$coefficient			
+clower = use.treat-(1.96*treat$stdev)
+cupper = use.treat+(1.96*treat$stdev)
+use.N.treat = treat$N.treatment + treat$N.control
+		
+# make parameters for these graphics
+	 
+par(las = 1)
+par(mar = c(5.1, 4.1, .5, .5))
+plot(xs, use.treat,
+ylim = use.ylims,
+xlim = xlims,
+type = 'n',
+ylab = 'Treatment Effect',
+xlab = 'Treated Group Distance from Projects',
+xaxt = 'n',
+yaxt = 'n')
+
+abline(h = 0, lty = 2)
 				
-			segments(x0=xs,x1=xs,
-						y0= use.treat+line.offset,y1=cupper)
-			segments(x0=xs,x1=xs,
-						y0= use.treat,y1=clower)
+segments(x0=xs,
+         x1=xs,
+         y0= use.treat + line.offset,
+         y1=cupper)
 
-		### Treatment Effects
+segments(x0=xs,
+         x1=xs,
+         y0= use.treat,
+         y1=clower)
+
+### Treatment Effects
 			
-			points(xs, use.treat, 
-				pch = pchs[i], 
-				cex = point.size,
-					bg = 'white',
-       			col = 'black')
-			text(xs,use.treat,
-			     paste('(',use.N.treat,')',sep = ''),
-			     cex = cex.N,
-			     pos = 3
-			  )
-			axis(side = 1,
+points(xs, use.treat, 
+pch = pchs[i], 
+cex = point.size,
+bg = 'white',
+col = 'black')
+text(xs,use.treat,
+paste('(',use.N.treat,')',sep = ''),
+cex = cex.N,
+pos = 3)
+
+
+axis(side = 1,
 					at = xs,
 					label = seq(100,1000,100),
 					cex.axis = cex.axis
 					)
-			axis(side = 2,
+axis(side = 2,
 					at = use.ys,
 					label = use.ys.lab,
 					cex.axis = cex.axis
-					)	
-			
-		}
-	}	
+					)
 ```
 
 
@@ -312,11 +281,11 @@ for(figure in c('white.basic.main','white.demo.main','white.demo.property','whit
 
 # load more data
 
-distdat =  read.csv('houses.data/predicted.results.distance.vary.context.csv')
+distdat =  read_csv('houses.data/predicted.results.distance.vary.context.csv')
 
 # so much data
 
-areadat = read.csv('houses.data/predicted.results.area.vary.context.csv')
+areadat = read_csv('houses.data/predicted.results.area.vary.context.csv')
 
 #new ylims for these graphs
 
@@ -395,8 +364,8 @@ obama.elections = c('obama_sen_primary_pct_ei','keyes_pct_ei','obama_pres_primar
 
 # Load! More! Data!
 
-dists = read.csv('houses.data/distance.vote.differences.csv')
-demos = read.csv('houses.data/demolished.vote.differences.csv')
+dists = read_csv('houses.data/distance.vote.differences.csv')
+demos = read_csv('houses.data/demolished.vote.differences.csv')
 
 graphs = c('5a','5b','6')
 
@@ -513,7 +482,7 @@ for(i in graphs){
 
 # You guessed it
 
-groups = read.csv('houses.data/par.trends.csv')
+groups = read_csv('houses.data/par.trends.csv')
 
 
 #plot elections votes
@@ -544,3 +513,6 @@ groups = read.csv('houses.data/par.trends.csv')
 			
 ```
 
+## References
+
+Enos, Ryan D., 2014, "Replication data for: What the Demolition of Public Housing Teaches Us About the Impact of Racial Threat on Political Behavior", https://doi.org/10.7910/DVN/26612, Harvard Dataverse, V2
