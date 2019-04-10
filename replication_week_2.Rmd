@@ -47,6 +47,8 @@ dists = seq(from = 100, to = 1000, by = 100)
 
 cat('begin basic difference-in-differences estimation \n')
 
+# you only need .95 confidence interval - take out all of the other estimations.
+
 namepcts = .95
 
 ##matrices for strong results
@@ -72,6 +74,7 @@ use.data = data[data$reg<"2000-10-10"&is.na(data$reg)==F,]
 
 ```{r, cache=TRUE}
 
+
 ##loop through definitions of white and distances and estimate at each combination
 
 for(j in 1:length(namepcts)){
@@ -94,7 +97,7 @@ for(j in 1:length(namepcts)){
 	   ##boostrapped standard errors
       	
 		if(white.treat.N[j,h] > 0){
-			white.boot = two.boot((Wtreat$vote2004-Wtreat$vote2000),(Wcont$vote2004-Wcont$vote2000),mean, R = 1000, na.rm=T)
+			white.boot = two.boot((Wtreat$vote2004-Wtreat$vote2000),(Wcont$vote2004-Wcont$vote2000),mean, R = 2, na.rm=T)
 			white.treat.effect.mean.boot[j,h] = white.boot$t0
 			white.boot.ci = boot.ci(white.boot, type = 'basic')
 			white.treat.effect.conf.boot.lower[j,h] = white.boot.ci$basic[4]
@@ -102,7 +105,7 @@ for(j in 1:length(namepcts)){
 		      		}
 		      		
 		if(black.treat.N[j,h] > 0){
-			black.boot = two.boot((Btreat$vote2004-Btreat$vote2000),(Bcont$vote2004-Bcont$vote2000),mean, R = 1000, na.rm=T)
+			black.boot = two.boot((Btreat$vote2004-Btreat$vote2000),(Bcont$vote2004-Bcont$vote2000),mean, R = 2, na.rm=T)
 			black.treat.effect.mean.boot[j,h] = black.boot$t0
 			black.boot.ci = boot.ci(black.boot, type = 'basic')
 			black.treat.effect.conf.boot.lower[j,h] = black.boot.ci$basic[4]
