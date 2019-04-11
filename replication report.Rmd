@@ -469,6 +469,7 @@ graphs = c('5a','5b','6')
 for(i in graphs){
 
 	if(i == '5a'){dat = dists}
+  
 	else{dat = demos}
 		
 	if(i %in% c('5a','5b')){
@@ -700,6 +701,39 @@ for(j in 1:length(namepcts)){
 time.elapsed = proc.time() - ptm  ##end time
 
 cat(paste('total elapsed time:', time.elapsed[3],'\n \n',sep = ' '))
+
+```
+```{r}
+# Table 1
+
+##define data that will bs used for series of tests below
+
+white.data = data[data$reg<"2000-10-10"&is.na(data$reg)==F,]
+
+##only need subjects who qualify by name pcts
+
+white.data = white.data[white.data$whitename>=.975,]
+
+usedata <- white.data
+
+##create chunks for estimation
+
+distances = seq(from = 10, to = 2000, by = 10)
+
+areas = seq(from = 0, to = 1, length.out = length(distances))
+			      
+##storage bin
+
+outmat.s = matrix(ncol = 5, nrow = 0)
+
+outmat.d = matrix(ncol = 5, nrow = 0)
+
+# make a regression for the table using lm().
+
+out.reg = lm(vote2004 ~ log(demo.distance) + log(context_black) + vote2000, data = usedata)
+
+stargazer(out.reg,
+          type = "latex")
 
 ```
 
