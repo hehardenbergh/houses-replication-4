@@ -374,7 +374,7 @@ areadat = read_csv('houses.data/predicted.results.area.vary.context.csv')
 
 ylims.predict = c(.6,.75)
 
-#Enos likes to put data in a list to "cycle through" it
+#Enos likes to put data in a list to be able to "cycle through" it later
 
 datas = list(distdat,areadat)
 
@@ -397,15 +397,23 @@ axis.labs = list(as.character(seq(from = 0, to = 2000, by = 200)),
                  
 	as.character(c('0','10%','20%','30%','40%','50%','60%','70%','80%','90%','100%')))
 
-for(i in 1:2){
+# This for loop confuses me, but it makes parameters for both graphs. I looked
+# at Gabe's code to understand the reason for taking out "1:2" and just having
+# "for(i in 1)" instead. 
+
+# I continued to get an error saying my x and y lengths did not match. this is a
+# problem in the plot() call on line 416. this is because the object "xs" is of
+# length 2 while distdat and areadat are of length 5.
+
+# for(i in 1){
   
   #saving renames columns, so name back
   
-	colnames(datas[[i]]) = c("mean","sd","50%","2.5%","97.5%") 
+	colnames(datas[[i]]) = c("mean", "sd", "50%", "2.5%", "97.5%") 
 
 		par(las = 1)
 		par(mar = c(5.1, 4.1, .5, .5))
-		plot(xs[[i]],datas[[i]][,'mean'],
+		plot(xs[[i]], datas[[i]][, "mean"],
 			type = 'l',
 			xlab = xlabs[i],
 			ylab = ylabs[i],
@@ -417,26 +425,32 @@ for(i in 1:2){
 		
 	#put horizontal and vertical lines on plots
 		
-	abline(h = seq(from = min(ylims.predict), to = max(ylims.predict), by = .025),
+	abline(h = seq(from = min(ylims.predict), 
+	               to = max(ylims.predict), 
+	               by = .025),
 	       lty = 2,
 	       col = 'gray',
 	       lwd = 1)
+	
 	abline(v = vlines[[i]], 
 	       lty = 2,
 	       col = 'gray',
 	       lwd = 1)
+	
 	lines(xs[[i]],datas[[i]][,'2.5%'],
 			lty = 3,
 			lwd = 2.5)
+	
 	lines(xs[[i]],datas[[i]][,'97.5%'],
 			lty = 3,
 			lwd = 2.5)
+	
 	axis(side = 1, 
 		at = vlines[[i]], 
 		labels = axis.labs[[i]],
 		cex.axis = cex.axis)
 		
-}
+# }
 ```
 
 ```{r }
